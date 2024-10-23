@@ -29,10 +29,36 @@ public class Potion : MonoBehaviour
         yIndex = _y;
     }
 
-    //move to target
+    //move to target ie moving the potion around
+    public void MoveToTarget(Vector2 _targetPos)
+    {
+        StartCoroutine(MoveCoroutine(_targetPos));
+    }
 
     //move coroutine
+    public IEnumerator MoveCoroutine(Vector2 _targetPos)
+    {
+        isMoving = true;
+        float duration = 0.2f;
 
+        Vector2 startPosition = transform.position;
+        float elapsedTime = 0f;
+
+        while (elapsedTime < duration)
+        {
+
+            float t = elapsedTime / duration;
+
+            transform.position = Vector2.Lerp(startPosition, _targetPos, t);
+
+            elapsedTime += Time.deltaTime;
+
+            yield return null;
+        }
+
+        transform.position = _targetPos;
+        isMoving = false;
+    }
 }
 
 public enum PortionType
