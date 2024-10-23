@@ -67,10 +67,204 @@ public class PotionBoard : MonoBehaviour
                     potion.GetComponent<Potion>().SetIndicies(x, y);
                     potionBoard[x, y] = new Node(true, potion);
                 }
+            }
+        }
+        
+        //ensures the board doesnt have a win situation on start
+        if (CheckBoard())
+        {
+            Debug.Log("We have matches let us recreate the board");
+            InitializeBoard();
+        }
+        else
+        {
+            Debug.Log("There are no mathces it is time to start the game");
+        }
 
-                
+        
+    }
 
+    //check if we have a match or not
+    public bool CheckBoard()
+    {
+        Debug.Log("Checking Log");
+        bool hasMatched = false;
+
+        List<Potion> potionsToRemove = new();
+
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                //check if portion node is usable
+                if (potionBoard[x, y].isUsable)
+                {
+                    //thenn proceed to get potion class in node
+                    Potion potion = potionBoard[x, y].potion.GetComponent<Potion>();
+
+
+                    //ensure it is not matched 
+                    if (!potion.isMatched)
+                    {
+                        //run some matching logic
+                        MatchResult matchedPotion = IsConnected(potion);
+
+                        //if we have a match
+                        if(matchedPotion.connectedPotions.Count >= 3)
+                        {
+                            //complex matching. Cross matching
+
+
+                            potionsToRemove.AddRange(matchedPotion.connectedPotions);
+
+                            //mark eatch potion as matched
+                            foreach(Potion pot in matchedPotion.connectedPotions)
+                            {
+                                pot.isMatched = true;   
+                            }
+                            hasMatched = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        return hasMatched;
+    }
+
+    MatchResult IsConnected(Potion potion)
+    {
+        //stores any potential matches and its type
+        List<Potion> connectedPotions = new();
+        PortionType potionType = potion.portionType;
+
+
+        connectedPotions.Add(potion);
+
+        //checking for matches
+        //check right
+        CheckDirection(potion, new Vector2Int(1, 0), connectedPotions);
+        //check left
+        CheckDirection(potion, new Vector2Int(-1, 0), connectedPotions);
+        //have we made a three (horizontal) match?
+        if(connectedPotions.Count == 3)
+        {
+            Debug.Log($"Normal Horizontal 3 match, the colour is: + {connectedPotions[0].portionType}");
+
+            return new MatchResult
+            {
+                connectedPotions = connectedPotions,
+                direction = MatchDirection.Horizontal,
+            };
+        }
+        //checking for more than three match? long horizontal match?
+        else if(connectedPotions.Count > 3)
+        {
+            Debug.Log($"Long Horizontal 3 match, the colour is: + {connectedPotions[0].portionType}");
+            return new MatchResult
+            {
+                connectedPotions = connectedPotions,
+                direction = MatchDirection.LongHorizontal,
+            };
+        }
+        //clear out the connected potions if no match is made
+        connectedPotions.Clear();
+        //re-add our initial potion
+        connectedPotions.Add(potion);
+
+
+        //check up
+        CheckDirection(potion, new Vector2Int(0, 1), connectedPotions);
+        //check down
+        CheckDirection(potion, new Vector2Int(0, -1), connectedPotions);
+        //have we made a three (vertical) match?
+        if (connectedPotions.Count == 3)
+        {
+            Debug.Log($"Normal Vertical 3 match, the colour is: + {connectedPotions[0].portionType}");
+
+            return new MatchResult
+            {
+                connectedPotions = connectedPotions,
+                direction = MatchDirection.Vertical,
+            };
+        }
+        //checking for more than three match? long vertical match?
+        else if (connectedPotions.Count > 3)
+        {
+            Debug.Log($"Long Vertical 3 match, the colour is: + {connectedPotions[0].portionType}");
+            return new MatchResult
+            {
+                connectedPotions = connectedPotions,
+                direction = MatchDirection.LongVertical,
+            };
+        }
+        else //if there is no match in any direction
+        {
+            return new MatchResult
+            {
+                connectedPotions = connectedPotions,
+                direction = MatchDirection.None
+            };
+        }
+
+    }
+
+    //CheckDirection
+    void CheckDirection(Potion pot, Vector2Int direction, List<Potion> connectedPotion)
+    {
+        PortionType potionType = pot.portionType;
+        //check neighnbouring portions
+        int x = pot.xIndex + direction.x;
+        int y = pot.yIndex + direction.y;
+
+        //TODO!can add a diagonal check here
+
+        //Check that we are within the boundaries of the board
+        while(x >= 0 && x < width && y >= 0 && y < height)
+        {
+            if(potionBoard[x, y].isUsable)
+            {
+                Potion neighbourPotion = potionBoard[x,y].potion.GetComponent<Potion>();
+
+                //check for matched
+                //does out portion type match?
+                //ensure it is not previously matched
+                if (!neighbourPotion.isMatched && neighbourPotion.portionType == potionType)
+                {
+                    connectedPotion.Add(neighbourPotion);
+                    //move to the next location
+                    x += direction.x;
+                    y += direction.y;
+                }
+                else
+
+                {
+                    break;
+                }
+            } 
+            else
+            {
+                break;
             }
         }
     }
+
 }
+
+public class MatchResult
+{
+    public List<Potion> connectedPotions;
+    public MatchDirection direction;
+}
+
+public enum MatchDirection
+{
+    Vertical,
+    Horizontal,
+    LongVertical,
+    LongHorizontal,
+    Super,  //when the match is in more than one direction
+    None
+
+}
+
