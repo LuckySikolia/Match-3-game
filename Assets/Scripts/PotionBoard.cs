@@ -19,6 +19,8 @@ public class PotionBoard : MonoBehaviour
     public Node[,] potionBoard;
     public GameObject portionBoardGO;
 
+    public List<GameObject> potionsToDestroy = new();
+
     //reference layoutArray
     public ArrayLayout arrayLayout;
 
@@ -39,6 +41,7 @@ public class PotionBoard : MonoBehaviour
     //logic for spawning the board at game start
     void InitializeBoard()
     {
+        DestroyPotions();
         potionBoard = new Node[width, height]; // creates an 8x6 board
 
         //calculate spacing of x and y
@@ -66,6 +69,7 @@ public class PotionBoard : MonoBehaviour
                     GameObject potion = Instantiate(potionPrefabs[randomIndex], position, Quaternion.identity);
                     potion.GetComponent<Potion>().SetIndicies(x, y);
                     potionBoard[x, y] = new Node(true, potion);
+                    potionsToDestroy.Add(potion); 
                 }
             }
         }
@@ -82,6 +86,18 @@ public class PotionBoard : MonoBehaviour
         }
 
         
+    }
+
+    private void DestroyPotions()
+    {
+        if(potionsToDestroy != null)
+        {
+            foreach(GameObject potion in potionsToDestroy)
+            {
+                Destroy(potion);
+            }
+            potionsToDestroy.Clear();
+        }
     }
 
     //check if we have a match or not
@@ -248,6 +264,14 @@ public class PotionBoard : MonoBehaviour
             }
         }
     }
+    #region Swapping Potions
+    //select potion
+    //swap potion
+    //action potion location swapping
+    //check for adjasent potion
+    //check for processing matches
+
+    #endregion
 
 }
 

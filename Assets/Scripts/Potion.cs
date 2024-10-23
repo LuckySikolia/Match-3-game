@@ -29,6 +29,9 @@ public class Potion : MonoBehaviour
         yIndex = _y;
     }
 
+    //move to target
+
+    //move coroutine
 
 }
 
