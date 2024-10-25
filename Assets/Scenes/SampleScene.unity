@@ -2010,6 +2010,8 @@ MonoBehaviour:
   pointsText: {fileID: 1913880943}
   movesText: {fileID: 755642857}
   goalsText: {fileID: 331363529}
+  congratulationsText: {fileID: 1754593797}
+  unfortunatelyText: {fileID: 1939753644}
 --- !u!4 &1859048186
 Transform:
   m_ObjectHideFlags: 0
@@ -2216,11 +2218,11 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Unfortunately you only got x points in x moves
+  m_text: 'Unfortunately you only got {points} points in x moves
 
 
-    Better luck next
-    time'
+    Better luck
+    next time'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

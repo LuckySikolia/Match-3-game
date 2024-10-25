@@ -150,7 +150,7 @@ public class PotionBoard : MonoBehaviour
         Debug.Log("Checking Log");
         bool hasMatched = false;
 
-        //ensure you start with bo potiins
+        //ensure you start with no potiins
         potionsToRemove.Clear();
         
 

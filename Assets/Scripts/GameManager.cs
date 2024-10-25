@@ -21,6 +21,11 @@ public class GameManager : MonoBehaviour
     public TMP_Text movesText;
     public TMP_Text goalsText;
 
+    //victory text
+    public TextMeshProUGUI congratulationsText;
+    public TextMeshProUGUI unfortunatelyText;
+
+
     private void Awake()
     {
         Instance = this;
@@ -41,10 +46,13 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        Debug.Log($"Points: {points}, Moves: {moves}, Goals: {goal}");
         //constantly update the text
         pointsText.text = $"Points: {points.ToString()}";
         movesText.text = $"Moves: {moves.ToString()}";
         goalsText.text = $"Goals: {goal.ToString()}";
+        congratulationsText.text = $"Congratulations you won in {moves} moves and scored {points} points!";
+        unfortunatelyText.text = $"Unfortunately you only got {points} points in {moves} moves\r\n\r\nBetter luck next time.";
     }
 
     public void ProcessTurn(int _pointsToGain, bool _subtractMoves)
@@ -62,6 +70,7 @@ public class GameManager : MonoBehaviour
             //display a victory screen
             backgroundPanel.SetActive(true);
             victoryPanel.SetActive(true);
+            
             PotionBoard.Instance.potionParent.SetActive(false);
             return;
         }
