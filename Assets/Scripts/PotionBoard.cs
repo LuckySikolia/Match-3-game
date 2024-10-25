@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class PotionBoard : MonoBehaviour
@@ -112,7 +113,7 @@ public class PotionBoard : MonoBehaviour
         }
         
         //ensures the board doesnt have a win situation on start
-        if (CheckBoard(false))
+        if (CheckBoard())
         {
             Debug.Log("We have matches let us recreate the board");
             InitializeBoard();
@@ -138,12 +139,20 @@ public class PotionBoard : MonoBehaviour
     }
 
     //check if we have a match or not
-    public bool CheckBoard(bool _takeAction)
+    public bool CheckBoard()
     {
+        //once game is over dont make any matches
+        if (GameManager.Instance.isGameEnded)
+        {
+            return false;
+        }
+
         Debug.Log("Checking Log");
         bool hasMatched = false;
 
-        List<Potion> potionsToRemove = new();
+        //ensure you start with bo potiins
+        potionsToRemove.Clear();
+        
 
         foreach(Node nodePotion in potionBoard)
         {
@@ -191,25 +200,31 @@ public class PotionBoard : MonoBehaviour
             }
         }
 
-
-        if (_takeAction)
-        {
-            foreach (Potion potionToRemove in potionsToRemove)
-            {
-                //unmatich them 
-                potionToRemove.isMatched = false;
-            }
-
-            RemoveAndRefill(potionsToRemove);
-
-            if (CheckBoard(false))
-            {
-                CheckBoard(true);
-            }
-        }
-        //check for brand new match 
-        
+        //check for brand new match         
         return hasMatched;
+    }
+
+    //only gets called when you have a matched board currently (//repeats until we have no more matches)
+    public IEnumerator ProcessTurnOnMatchedBoard(bool _subtractMoves)
+    {
+        foreach (Potion potionToRemove in potionsToRemove)
+        {
+            //unmatch them 
+            potionToRemove.isMatched = false;
+        }
+
+        RemoveAndRefill(potionsToRemove);
+        //point system (i potion  = 1 point)
+        GameManager.Instance.ProcessTurn(potionsToRemove.Count, _subtractMoves);
+
+        yield return new WaitForSeconds(0.4f);
+
+        //check board again for duplicate matches
+        if (CheckBoard())
+        {
+            StartCoroutine(ProcessTurnOnMatchedBoard(false)); 
+        }
+
     }
 
     private void RemoveAndRefill(List<Potion> _potionsToRemove)
@@ -604,16 +619,26 @@ public class PotionBoard : MonoBehaviour
         //wait before doing any checks for matches to avoid deleting the potions prematurely
         yield return new WaitForSeconds(0.2f);
 
-        bool hasMatch = CheckBoard(true); //ERROR 1: CONFIRM CODE IN THIS SECTION WITH THE FINAL CODE
-
-        //if there is no match
-        if (!hasMatch)
+        if (CheckBoard())
         {
-            //Swap back to previous location
+            //if we have a match
+            //start a coroutine that is going to process the matches in our turn
+            StartCoroutine(ProcessTurnOnMatchedBoard(true));
+        }
+        else //swap potions back
+        {
             DoSwap(_currentPotion, _targetPotion);
         }
-
         isProcessingMove = false;
+
+        //if there is no match
+        //if (!hasMatch)
+        //{
+        //    //Swap back to previous location
+        //    DoSwap(_currentPotion, _targetPotion);
+        //}
+
+        //isProcessingMove = false;
     }
 
     private bool IsAdjacent(Potion _currentPotion, Potion _targetPotion)
